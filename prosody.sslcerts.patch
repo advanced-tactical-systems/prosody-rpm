@@ -1,0 +1,23 @@
+diff -up prosody-0.8.0/Makefile.patch prosody-0.8.0/Makefile
+--- prosody-0.8.0/Makefile.patch	2011-04-08 14:27:59.795497482 +0200
++++ prosody-0.8.0/Makefile	2011-04-08 14:29:51.175569107 +0200
+@@ -32,18 +32,16 @@ install: prosody.install prosodyctl.inst
+ 	install -m644 plugins/*.lua $(MODULES)
+ 	install -d $(MODULES)/muc
+ 	install -m644 plugins/muc/* $(MODULES)/muc
+-	install -m644 certs/* $(CONFIG)/certs
+ 	install -d $(MODULES)/adhoc
+ 	install -m644 plugins/adhoc/*.lua $(MODULES)/adhoc
+ 	install -m644 man/prosodyctl.man $(MAN)/man1/prosodyctl.1
+-	test -e $(CONFIG)/prosody.cfg.lua || install -m644 prosody.cfg.lua.install $(CONFIG)/prosody.cfg.lua
++	test -e $(CONFIG)/prosody.cfg.lua || install -m644 prosody.cfg.lua.dist $(CONFIG)/prosody.cfg.lua
+ 	test -e prosody.version && install prosody.version $(SOURCE)/prosody.version || true
+ 	$(MAKE) install -C util-src
+ 
+ clean:
+ 	rm -f prosody.install
+ 	rm -f prosodyctl.install
+-	rm -f prosody.cfg.lua.install
+ 	rm -f prosody.version
+ 	$(MAKE) clean -C util-src
+ 

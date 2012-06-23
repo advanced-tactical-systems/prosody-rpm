@@ -1,0 +1,39 @@
+diff -up prosody-0.8.0/prosody.cfg.lua.dist.patch prosody-0.8.0/prosody.cfg.lua.dist
+--- prosody-0.8.0/prosody.cfg.lua.dist.patch	2011-04-08 14:20:24.508974815 +0200
++++ prosody-0.8.0/prosody.cfg.lua.dist	2011-04-08 14:25:56.159877253 +0200
+@@ -59,7 +59,7 @@ modules_enabled = {
+ 		--"admin_telnet"; -- Opens telnet console interface on localhost port 5582
+ 
+ 	-- Other specific functionality
+-		--"posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
++		"posix"; -- POSIX functionality, sends server to background, enables syslog, etc.
+ 		--"bosh"; -- Enable BOSH clients, aka "Jabber over HTTP"
+ 		--"httpserver"; -- Serve static files from a directory over HTTP
+ 		--"groups"; -- Shared roster support
+@@ -86,8 +86,8 @@ allow_registration = false;
+ -- These are the SSL/TLS-related settings. If you don't want
+ -- to use SSL/TLS, you may comment or remove this
+ ssl = {
+-	key = "certs/localhost.key";
+-	certificate = "certs/localhost.cert";
++	key = "/etc/pki/tls/private/prosody.key";
++	certificate = "/etc/pki/tls/certs/prosody.crt";
+ }
+ 
+ -- Only allow encrypted streams? Encryption is already used when
+@@ -123,11 +123,12 @@ authentication = "internal_plain"
+ -- Logging configuration
+ -- For advanced logging see http://prosody.im/doc/logging
+ log = {
+-	info = "prosody.log"; -- Change 'info' to 'debug' for verbose logging
+-	error = "prosody.err";
+-	-- "*syslog"; -- Uncomment this for logging to syslog
++	-- info = "prosody.log"; -- Change 'info' to 'debug' for verbose logging
++	-- error = "prosody.err";
++	"*syslog"; -- Uncomment this for logging to syslog
+ 	-- "*console"; -- Log to the console, useful for debugging with daemonize=false
+ }
++pidfile = "/var/run/prosody/prosody.pid";
+ 
+ ----------- Virtual hosts -----------
+ -- You need to add a VirtualHost entry for each domain you wish Prosody to serve.
