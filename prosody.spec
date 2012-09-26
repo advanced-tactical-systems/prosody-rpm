@@ -10,7 +10,7 @@
 
 Name:           prosody
 Version:        0.8.2
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
@@ -111,27 +111,25 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %preun
+%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
+%systemd_preun %{name}.service
+%else
 if [ $1 = 0 ]; then
     # Package removal, not upgrade
-    %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-    /bin/systemctl --no-reload disable %{name}.service > /dev/null 2>&1 || :
-    /bin/systemctl stop %{name}.service > /dev/null 2>&1 || :
-    %else
     service %{name} stop > /dev/null 2>&1 || :
     chkconfig --del %{name} || :
-    %endif
 fi
-
+%endif
 
 %post
+%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
+%systemd_post %{name}.service
+%else
 if [ $1 -eq 1 ] ; then
     # Initial installation
-    %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-    %else
     chkconfig --add %{name} || :
-    %endif
 fi
+%endif
 umask 077
 if [ ! -f %{sslkey} ] ; then
 %{_bindir}/openssl genrsa 1024 > %{sslkey} 2> /dev/null
@@ -159,11 +157,7 @@ fi
 
 %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    /bin/systemctl try-restart %{name}.service >/dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart %{name}.service
 %endif
 
 
@@ -188,6 +182,9 @@ fi
 
 
 %changelog
+* Thu Sep 27 2012 Johan Cwiklinski <johan At x-tnd DOt be> 0.8.2-7
+- Use systemd-rpm macros, bz #850282
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.2-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
