@@ -10,7 +10,7 @@
 
 Name:           prosody
 Version:        0.8.2
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
@@ -182,6 +182,9 @@ fi
 
 
 %changelog
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.2-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Thu Sep 27 2012 Johan Cwiklinski <johan At x-tnd DOt be> 0.8.2-7
 - Use systemd-rpm macros, bz #850282
 
