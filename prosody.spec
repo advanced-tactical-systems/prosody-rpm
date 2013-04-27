@@ -10,7 +10,7 @@
 
 Name:           prosody
 Version:        0.8.2
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
@@ -133,6 +133,8 @@ fi
 umask 077
 if [ ! -f %{sslkey} ] ; then
 %{_bindir}/openssl genrsa 1024 > %{sslkey} 2> /dev/null
+chown root:%{name} %{sslkey}
+chmod 640 %{sslkey}
 fi
 
 FQDN=`hostname`
@@ -152,6 +154,7 @@ SomeOrganizationalUnit
 ${FQDN}
 root@${FQDN}
 EOF
+chmod 644 %{sslcert}
 fi
 
 
@@ -169,7 +172,7 @@ fi
 %dir %{_libdir}/%{name}
 %{_libdir}/%{name}/*
 %dir %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}/*
+%config(noreplace) %attr(0640, root, %{name}) %{_sysconfdir}/%{name}/*
 %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
 %config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
 %{_unitdir}/%{name}.service
@@ -182,6 +185,11 @@ fi
 
 
 %changelog
+* Sat Apr 27 2013 Robert Scheck <robert@fedoraproject.org> - 0.8.2-9
+- Apply wise permissions to %%{_sysconfdir}/%%{name} (#955384)
+- Apply wise permissions to default SSL certificates (#955380)
+- Do not ship %%{_sysconfdir}/%%{name}/certs by default (#955385)
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.2-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
