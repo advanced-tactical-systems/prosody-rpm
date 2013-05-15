@@ -6,17 +6,18 @@
 %global sslcert %{_sysconfdir}/pki/tls/certs/prosody.crt
 %global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
 
-%global luaver 5.1
+%global luaver 5.2
+%global pretag beta1
 
 Name:           prosody
-Version:        0.8.2
-Release:        9%{?dist}
+Version:        0.9.0
+Release:        0.1.%{pretag}%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
 License:        MIT
 URL:            http://prosody.im/
-Source0:        http://prosody.im/downloads/source/%{name}-%{version}.tar.gz
+Source0:        http://prosody.im/downloads/source/%{name}-%{version}%{?pretag}.tar.gz
 Source1:        %{name}.init
 Source2:        %{name}.tmpfiles
 Source3:        %{name}.service
@@ -53,7 +54,7 @@ develop added functionality, or prototype new protocols.
 
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}%{?pretag}
 %patch0 -p1
 # remove default ssl certificates
 %patch1 -p1
@@ -185,6 +186,9 @@ fi
 
 
 %changelog
+* Wed May 15 2013 Tom Callaway <spot@fedoraproject.org> - 0.9.0-0.1.beta1
+- update to 0.9.0beta1, rebuild for lua 5.2
+
 * Sat Apr 27 2013 Robert Scheck <robert@fedoraproject.org> - 0.8.2-9
 - Apply wise permissions to %%{_sysconfdir}/%%{name} (#955384)
 - Apply wise permissions to default SSL certificates (#955380)
