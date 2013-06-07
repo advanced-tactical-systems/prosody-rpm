@@ -7,17 +7,17 @@
 %global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
 
 %global luaver 5.2
-%global pretag beta1
+%global pretag rc2
 
 Name:           prosody
 Version:        0.9.0
-Release:        0.1.%{pretag}%{?dist}
+Release:        0.2.%{pretag}%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
 License:        MIT
 URL:            http://prosody.im/
-Source0:        http://prosody.im/downloads/source/%{name}-%{version}%{?pretag}.tar.gz
+Source0:        http://prosody.im/tmp/%{version}%{?pretag}/%{name}-%{version}%{?pretag}.tar.gz
 Source1:        %{name}.init
 Source2:        %{name}.tmpfiles
 Source3:        %{name}.service
@@ -186,6 +186,9 @@ fi
 
 
 %changelog
+* Fri Jun 07 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.0-0.2.rc2
+- Update to 0.9.0rc2
+
 * Wed May 15 2013 Tom Callaway <spot@fedoraproject.org> - 0.9.0-0.1.beta1
 - update to 0.9.0beta1, rebuild for lua 5.2
 
