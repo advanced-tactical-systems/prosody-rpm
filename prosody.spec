@@ -7,11 +7,11 @@
 %global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
 
 %global luaver 5.2
-%global pretag rc2
+%global pretag rc3
 
 Name:           prosody
 Version:        0.9.0
-Release:        0.2.%{pretag}%{?dist}
+Release:        0.3.%{pretag}%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
@@ -186,6 +186,9 @@ fi
 
 
 %changelog
+* Fri Jun 21 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.0-0.3.rc3
+- Update to 0.9.0rc3
+
 * Fri Jun 07 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.0-0.2.rc2
 - Update to 0.9.0rc2
 
