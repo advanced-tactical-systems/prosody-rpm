@@ -11,13 +11,14 @@
 
 Name:           prosody
 Version:        0.9.0
-Release:        0.5.%{pretag}%{?dist}
+#Release:        0.5.%{pretag}%{?dist}
+Release:        1%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
 License:        MIT
 URL:            http://prosody.im/
-Source0:        http://prosody.im/tmp/%{version}%{?pretag}/%{name}-%{version}%{?pretag}.tar.gz
+Source0:        http://prosody.im/tmp/%{version}/%{name}-%{version}.tar.gz
 Source1:        %{name}.init
 Source2:        %{name}.tmpfiles
 Source3:        %{name}.service
@@ -54,7 +55,7 @@ develop added functionality, or prototype new protocols.
 
 
 %prep
-%setup -q -n %{name}-%{version}%{?pretag}
+%setup -q -n %{name}-%{version}
 %patch0 -p1
 # remove default ssl certificates
 %patch1 -p1
@@ -186,6 +187,9 @@ fi
 
 
 %changelog
+* Thu Aug 22 2013 Matěj Cepl <mcepl@redhat.com> - 0.9.0-1
+- Final upstream release.
+
 * Wed Aug 07 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.0-0.5.rc5
 - Update to 0.9.0rc5
 
