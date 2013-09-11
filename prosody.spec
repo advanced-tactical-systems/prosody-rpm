@@ -7,11 +7,9 @@
 %global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
 
 %global luaver 5.2
-%global pretag rc5
 
 Name:           prosody
-Version:        0.9.0
-#Release:        0.5.%{pretag}%{?dist}
+Version:        0.9.1
 Release:        1%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
@@ -187,6 +185,9 @@ fi
 
 
 %changelog
+* Wed Sep 11 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.1-1
+- Update to 0.9.1
+
 * Thu Aug 22 2013 Matěj Cepl <mcepl@redhat.com> - 0.9.0-1
 - Final upstream release.
 
