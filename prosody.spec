@@ -6,17 +6,17 @@
 %global sslcert %{_sysconfdir}/pki/tls/certs/prosody.crt
 %global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
 
-%global luaver 5.2
+%global luaver 5.1
 
 Name:           prosody
-Version:        0.9.1
+Version:        0.9.4
 Release:        1%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
 License:        MIT
 URL:            http://prosody.im/
-Source0:        http://prosody.im/tmp/%{version}/%{name}-%{version}.tar.gz
+Source0:        https://prosody.im/downloads/source/%{name}-%{version}.tar.gz
 Source1:        %{name}.init
 Source2:        %{name}.tmpfiles
 Source3:        %{name}.service
@@ -24,25 +24,36 @@ Patch0:         %{name}.config.patch
 Patch1:         %{name}.sslcerts.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  lua-devel
 BuildRequires:  libidn-devel
 BuildRequires:  openssl-devel
 %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
 BuildRequires:  systemd-units
 %endif
-Requires:  lua-expat
-Requires:  lua-sec
-Requires:  lua-filesystem
-Requires:  lua-dbi
 %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
 Requires(post): systemd-units
 Requires(preun): systemd-units
 Requires(postun): systemd-units
 %endif
+%if 0%{?fedora} >= 20
+# Prosody does not work with lua-5.2 and newer, luajit should always be
+# lua-5.1 compatible, so use luajit instead of lua on F20+.
+Requires: luajit
+Requires: lua-expat-compat
+Requires: lua-sec-compat
+Requires: lua-filesystem-compat
+Requires: lua-dbi-compat
+BuildRequires:  compat-lua-devel
+%else
 %if 0%{?fedora} >= 16 || 0%{?rhel} >= 7
 Requires: lua(abi) = %{luaver}
 %else
 Requires: lua >= %{luaver}
+%endif
+BuildRequires:  lua-devel
+Requires:  lua-expat
+Requires:  lua-sec
+Requires:  lua-filesystem
+Requires:  lua-dbi
 %endif
 
 %description
@@ -69,7 +80,8 @@ popd
 %build
 ./configure \
   --with-lua='' \
-  --with-lua-include=%{_includedir} \
+  --with-lua-include=%{_includedir}/lua-5.1 \
+  --runwith=/usr/bin/luajit \
   --prefix=%{_prefix}
 make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -fPIC"
 
@@ -185,6 +197,10 @@ fi
 
 
 %changelog
+* Fri May 30 2014 Jan Kaluza <jkaluza@redhat.com> - 0.9.4-1
+- update to version 0.9.4
+- build with luajit
+
 * Wed Sep 11 2013 Johan Cwiklinski <johan AT x-tnd DOT be> - 0.9.1-1
 - Update to 0.9.1
 
