@@ -10,7 +10,7 @@
 
 Name:           prosody
 Version:        0.9.4
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Flexible communications server for Jabber/XMPP
 
 Group:          System Environment/Daemons
@@ -40,6 +40,7 @@ Requires(postun): systemd-units
 Requires: luajit
 Requires: lua-expat-compat
 Requires: lua-sec-compat
+Requires: lua-socket-compat
 Requires: lua-filesystem-compat
 Requires: lua-dbi-compat
 BuildRequires:  compat-lua-devel
@@ -197,6 +198,9 @@ fi
 
 
 %changelog
+* Tue Jun 03 2014 Jan Kaluza <jkaluza@redhat.com> - 0.9.4-2
+- add missing lua-socket-compat dependency
+
 * Fri May 30 2014 Jan Kaluza <jkaluza@redhat.com> - 0.9.4-1
 - update to version 0.9.4
 - build with luajit
