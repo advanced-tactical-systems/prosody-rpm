@@ -58,6 +58,7 @@ added functionality, or prototype new protocols.
 %patch0 -p1 -b .config
 
 %build
+# CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
 ./configure \
   --prefix=%{_prefix} \
   --libdir=%{_libdir} \
@@ -65,7 +66,11 @@ added functionality, or prototype new protocols.
   --with-lua-include=%{_includedir}/lua-%{luaver} \
   --runwith=lua-%{luaver} \
 %endif
+%if 0%{?rhel} > 5
   --cflags="$RPM_OPT_FLAGS -fPIC -D_GNU_SOURCE" \
+%else
+  --cflags="$RPM_OPT_FLAGS -fPIC" \
+%endif
   --ldflags="$RPM_LD_FLAGS -shared" \
   --no-example-certs
 make %{?_smp_mflags}
