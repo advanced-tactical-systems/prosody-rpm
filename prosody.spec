@@ -1,164 +1,152 @@
-%{!?_initddir: %{expand: %%global _initddir %{_initrddir}}}
-%if 0%{?rhel} == 5
-%global _sharedstatedir %{_localstatedir}/lib
-%endif
+%global sslcert    %{_sysconfdir}/pki/%{name}/localhost.crt
+%global sslkey     %{_sysconfdir}/pki/%{name}/localhost.key
+%global luaver     5.1
 
-%global sslcert %{_sysconfdir}/pki/tls/certs/prosody.crt
-%global sslkey %{_sysconfdir}/pki/tls/private/prosody.key
-
-%global luaver 5.1
-
-Name:           prosody
-Version:        0.9.4
-Release:        4%{?dist}
-Summary:        Flexible communications server for Jabber/XMPP
-
-Group:          System Environment/Daemons
-License:        MIT
-URL:            http://prosody.im/
-Source0:        https://prosody.im/downloads/source/%{name}-%{version}.tar.gz
-Source1:        %{name}.init
-Source2:        %{name}.tmpfiles
-Source3:        %{name}.service
-Patch0:         %{name}.config.patch
-Patch1:         %{name}.sslcerts.patch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-BuildRequires:  libidn-devel
-BuildRequires:  openssl-devel
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-BuildRequires:  systemd-units
-%endif
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
-%endif
-%if 0%{?fedora} >= 20
-# Prosody does not work with lua-5.2 and newer, luajit should always be
-# lua-5.1 compatible, so use luajit instead of lua on F20+.
-Requires: luajit
-Requires: lua-expat-compat
-Requires: lua-sec-compat
-Requires: lua-socket-compat
-Requires: lua-filesystem-compat
-Requires: lua-dbi-compat
-BuildRequires:  compat-lua-devel
+Summary:           Flexible communications server for Jabber/XMPP
+Name:              prosody
+Version:           0.9.8
+Release:           1%{?dist}
+License:           MIT
+Group:             System Environment/Daemons
+URL:               https://prosody.im/
+Source0:           https://prosody.im/downloads/source/%{name}-%{version}.tar.gz
+Source1:           prosody.init
+Source2:           prosody.logrotate-init
+Source3:           prosody.service
+Source4:           prosody.logrotate-service
+Source5:           prosody.tmpfilesd
+Source6:           prosody-localhost.cfg.lua
+Source7:           prosody-example.com.cfg.lua
+Patch0:            prosody-0.9.8-config.patch
+BuildRequires:     libidn-devel, openssl-devel
+Requires(pre):     shadow-utils
+%if 0%{?rhel} > 6 || 0%{?fedora} > 17
+Requires(post):    systemd, %{_bindir}/openssl
+Requires(preun):   systemd
+Requires(postun):  systemd
+BuildRequires:     systemd
 %else
-%if 0%{?fedora} >= 16 || 0%{?rhel} >= 7
-Requires: lua(abi) = %{luaver}
+Requires(post):    /sbin/chkconfig, %{_bindir}/openssl
+Requires(preun):   /sbin/service, /sbin/chkconfig
+Requires(postun):  /sbin/service
+%endif
+%if 0%{?rhel} > 7 || 0%{?fedora} > 19
+# Prosody does not work with lua >= 5.2, so use compat-lua instead of lua
+# on Fedora >= 20; luajit (compatible with 5.1) would be second choice.
+Requires:          compat-lua, lua-filesystem-compat, lua-expat-compat
+Requires:          lua-socket-compat, lua-sec-compat
+BuildRequires:     compat-lua-devel
 %else
-Requires: lua >= %{luaver}
+%if 0%{?rhel} > 6 || 0%{?fedora} > 15
+Requires:          lua(abi) = %{luaver}
+%else
+Requires:          lua >= %{luaver}
 %endif
-BuildRequires:  lua-devel
-Requires:  lua-expat
-Requires:  lua-sec
-Requires:  lua-filesystem
-Requires:  lua-dbi
+Requires:          lua-filesystem, lua-expat, lua-socket, lua-sec
+BuildRequires:     lua-devel
 %endif
+BuildRoot:         %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
-Prosody is a flexible communications server for Jabber/XMPP  written in Lua.
+Prosody is a flexible communications server for Jabber/XMPP written in Lua.
 It aims to be easy to use, and light on resources. For developers it aims
-to be easy to extend and give a flexible system on which to rapidly 
-develop added functionality, or prototype new protocols.
-
+to be easy to extend and give a flexible system on which to rapidly develop
+added functionality, or prototype new protocols.
 
 %prep
-%setup -q -n %{name}-%{version}
-%patch0 -p1
-# remove default ssl certificates
-%patch1 -p1
-#do the sed atfer patch1, to avoid a i686 build issue
-sed -e 's|$(PREFIX)/lib|$(PREFIX)/%{_lib}|' -i Makefile
-rm -rf certs/
-# fix wrong end of line encoding
-pushd doc
-sed -i -e 's|\r||g' stanza.txt session.txt roster_format.txt
-popd
-
+%setup -q
+%patch0 -p1 -b .config
 
 %build
 ./configure \
-  --with-lua='' \
-  --with-lua-include=%{_includedir}/lua-5.1 \
-  --runwith=/usr/bin/luajit \
-  --prefix=%{_prefix}
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -fPIC"
+  --prefix=%{_prefix} \
+  --libdir=%{_libdir} \
+%if 0%{?rhel} > 7 || 0%{?fedora} > 19
+  --with-lua-include=%{_includedir}/lua-%{luaver} \
+  --runwith=lua-%{luaver} \
+%endif
+  --cflags="$RPM_OPT_FLAGS -fPIC -D_GNU_SOURCE" \
+  --ldflags="$RPM_LD_FLAGS -shared" \
+  --no-example-certs
+make %{?_smp_mflags}
 
+# Make prosody-migrator
+make -C tools/migration %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT
-#fix perms
-chmod -x $RPM_BUILD_ROOT%{_libdir}/%{name}/%{name}.version
-#avoid rpmlint unstripped-binary-or-object warnings
-chmod 0755 $RPM_BUILD_ROOT%{_libdir}/%{name}/util/*.so
+mkdir -p $RPM_BUILD_ROOT{%{_sysconfdir}/pki,%{_localstatedir}/{lib,log}/%{name}}/
+make DESTDIR=$RPM_BUILD_ROOT install
 
-#directories for datadir and pids
-mkdir -p $RPM_BUILD_ROOT%{_sharedstatedir}/%{name}
-chmod 0755 $RPM_BUILD_ROOT%{_sharedstatedir}/%{name}
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
+# Install prosody-migrator
+make -C tools/migration DESTDIR=$RPM_BUILD_ROOT install
 
+# Install ejabberd2prosody
+install -p -m 755 tools/ejabberd2prosody.lua $RPM_BUILD_ROOT%{_bindir}/ejabberd2prosody
+sed -e 's@;../?.lua@;%{_libdir}/%{name}/util/?.lua;%{_libdir}/%{name}/?.lua;@' \
+  -e '1s@ lua$@ lua-%{luaver}@' -i $RPM_BUILD_ROOT%{_bindir}/ejabberd2prosody
+touch -c -r tools/ejabberd2prosody.lua $RPM_BUILD_ROOT%{_bindir}/ejabberd2prosody
+install -p -m 644 tools/erlparse.lua $RPM_BUILD_ROOT%{_libdir}/%{name}/util/
+
+# Move certificates directory and symlink it
+mv -f $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/certs/ $RPM_BUILD_ROOT%{_sysconfdir}/pki/%{name}/
+ln -s ../pki/%{name}/ $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/certs
+
+# Install systemd/tmpfiles or initscript files
 %if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-#systemd stuff
-mkdir -p $RPM_BUILD_ROOT%{_unitdir}
-install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
-
-#tmpfiles.d stuff
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d
-install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/tmpfiles.d/%{name}.conf
+install -D -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
+install -D -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/%{name}
+install -D -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT%{_tmpfilesdir}/%{name}.conf
+mkdir -p $RPM_BUILD_ROOT/run/%{name}
 %else
-#install initd script
-mkdir -p $RPM_BUILD_ROOT%{_initddir}
-install -m755 %{SOURCE1} $RPM_BUILD_ROOT%{_initddir}/%{name}
+install -D -p -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/%{name}
+install -D -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/%{name}
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/%{name}
+sed -e 's@/run@%{_localstatedir}/run@' -i $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/prosody.cfg.lua
 %endif
 
+# Keep configuration file timestamp
+touch -c -r prosody.cfg.lua.dist.config $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/prosody.cfg.lua
+
+# Install virtual host configuration
+install -D -p -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d/localhost.cfg.lua
+install -D -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d/example.com.cfg.lua
+
+# Fix permissions for rpmlint
+chmod 755 $RPM_BUILD_ROOT%{_libdir}/%{name}/util/*.so
+
+# Fix incorrect end-of-line encoding
+sed -e 's/\r//g' -i doc/stanza.txt doc/session.txt doc/roster_format.txt
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
 %pre
-%{_sbindir}/useradd -d %{_sharedstatedir}/%{name} -r -s /sbin/nologin %{name} 2> /dev/null || :
-
-
-%preun
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-%systemd_preun %{name}.service
-%else
-if [ $1 = 0 ]; then
-    # Package removal, not upgrade
-    service %{name} stop > /dev/null 2>&1 || :
-    chkconfig --del %{name} || :
-fi
-%endif
+getent group %{name} > /dev/null || %{_sbindir}/groupadd -r %{name}
+getent passwd %{name} > /dev/null || %{_sbindir}/useradd -r -g %{name} -d %{_localstatedir}/lib/%{name} -s /sbin/nologin -c "Prosody XMPP Server" %{name}
+exit 0
 
 %post
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
+%if 0%{?rhel} > 6 || 0%{?fedora} > 17
 %systemd_post %{name}.service
 %else
-if [ $1 -eq 1 ] ; then
-    # Initial installation
-    chkconfig --add %{name} || :
-fi
+/sbin/chkconfig --add %{name}
 %endif
-umask 077
-if [ ! -f %{sslkey} ] ; then
-%{_bindir}/openssl genrsa 1024 > %{sslkey} 2> /dev/null
-chown root:%{name} %{sslkey}
-chmod 640 %{sslkey}
+
+if [ ! -f %{sslkey} ]; then
+  umask 077
+  %{_bindir}/openssl genrsa 2048 > %{sslkey} 2> /dev/null
+  chown root:%{name} %{sslkey}
+  chmod 640 %{sslkey}
 fi
 
-FQDN=`hostname`
-if [ "x${FQDN}" = "x" ]; then
-   FQDN=localhost.localdomain
-fi
+if [ ! -f %{sslcert} ]; then
+  FQDN=`hostname`
+  if [ "x${FQDN}" = "x" ]; then
+    FQDN=localhost.localdomain
+  fi
 
-if [ ! -f %{sslcert} ] ; then
-cat << EOF | %{_bindir}/openssl req -new -key %{sslkey} \
-         -x509 -days 365 -set_serial $RANDOM \
-         -out %{sslcert} 2>/dev/null
+  cat << EOF | %{_bindir}/openssl req -new -key %{sslkey} -x509 -sha256 -days 365 -set_serial $RANDOM -out %{sslcert} 2> /dev/null
 --
 SomeState
 SomeCity
@@ -167,37 +155,65 @@ SomeOrganizationalUnit
 ${FQDN}
 root@${FQDN}
 EOF
-chmod 644 %{sslcert}
+  chmod 644 %{sslcert}
 fi
 
-
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-%postun
-%systemd_postun_with_restart %{name}.service
+%preun
+%if 0%{?rhel} > 6 || 0%{?fedora} > 17
+%systemd_preun %{name}.service
+%else
+if [ $1 -eq 0 ]; then
+  /sbin/service %{name} stop > /dev/null 2>&1 || :
+  /sbin/chkconfig --del %{name}
+fi
 %endif
 
+%postun
+%if 0%{?rhel} > 6 || 0%{?fedora} > 17
+%systemd_postun_with_restart %{name}.service
+%else
+if [ $1 -ne 0 ]; then
+  /sbin/service %{name} condrestart > /dev/null 2>&1 || :
+fi
+%endif
 
 %files
 %defattr(-,root,root,-)
-%doc AUTHORS COPYING HACKERS README TODO doc/*
+%{!?_licensedir:%global license %%doc}
+%license COPYING
+%doc AUTHORS HACKERS README doc/*
 %{_bindir}/%{name}
 %{_bindir}/%{name}ctl
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/*
-%dir %{_sysconfdir}/%{name}
-%config(noreplace) %attr(0640, root, %{name}) %{_sysconfdir}/%{name}/*
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-%config(noreplace) %{_sysconfdir}/tmpfiles.d/%{name}.conf
+%{_bindir}/%{name}-migrator
+%{_bindir}/ejabberd2prosody
+%{_libdir}/%{name}/
+%dir %attr(750,root,%{name}) %{_sysconfdir}/pki/%{name}/
+%config(noreplace) %attr(0640,root,%{name}) %{_sysconfdir}/pki/%{name}/*
+%dir %attr(750,root,%{name}) %{_sysconfdir}/%{name}/
+%config(noreplace) %attr(0640,root,%{name}) %{_sysconfdir}/%{name}/*.cfg.lua
+%dir %attr(750,root,%{name}) %{_sysconfdir}/%{name}/conf.d/
+%config(noreplace) %attr(0640,root,%{name}) %{_sysconfdir}/%{name}/conf.d/*.cfg.lua
+%attr(750,root,%{name}) %{_sysconfdir}/%{name}/certs
+%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
+%if 0%{?rhel} > 6 || 0%{?fedora} > 17
 %{_unitdir}/%{name}.service
+%{_tmpfilesdir}/%{name}.conf
+%dir %attr(0755,%{name},%{name}) /run/%{name}/
 %else
-%{_initddir}/%{name}
+%{_sysconfdir}/rc.d/init.d/%{name}
+%dir %attr(0755,%{name},%{name}) %{_localstatedir}/run/%{name}/
 %endif
-%{_mandir}/man1/*.1.gz
-%dir %attr(-, %{name}, %{name}) %{_sharedstatedir}/%{name}
-%dir %attr(-, %{name}, %{name}) %{_localstatedir}/run/%{name}
-
+%dir %attr(750,%{name},%{name}) %{_localstatedir}/lib/%{name}/
+%dir %attr(750,%{name},%{name}) %{_localstatedir}/log/%{name}/
+%{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Sat Apr 18 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-1
+- Upgrade to 0.9.8 (#1152126)
+
+* Sat Feb 14 2015 Robert Scheck <robert@fedoraproject.org> 0.9.7-1
+- Upgrade to 0.9.7 (#985563, #1152126)
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.4-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
