@@ -70,7 +70,7 @@ added functionality, or prototype new protocols.
   --with-lua-include=%{_includedir}/lua-%{luaver} \
   --runwith=lua-%{luaver} \
 %endif
-%if 0%{?rhel} > 5
+%if 0%{?rhel} != 5
   --cflags="$RPM_OPT_FLAGS -fPIC -D_GNU_SOURCE" \
 %else
   --cflags="$RPM_OPT_FLAGS -fPIC" \
