@@ -18,6 +18,7 @@ Source5:           prosody.tmpfilesd
 Source6:           prosody-localhost.cfg.lua
 Source7:           prosody-example.com.cfg.lua
 Patch0:            prosody-0.9.8-config.patch
+Patch1:            prosody-0.9.8-rhel5.patch
 BuildRequires:     libidn-devel, openssl-devel
 Requires(pre):     shadow-utils
 %if 0%{?rhel} > 6 || 0%{?fedora} > 17
@@ -56,6 +57,9 @@ added functionality, or prototype new protocols.
 %prep
 %setup -q
 %patch0 -p1 -b .config
+%if 0%{?rhel} == 5
+%patch1 -p1
+%endif
 
 %build
 # CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
