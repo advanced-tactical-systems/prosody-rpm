@@ -5,7 +5,7 @@
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
 Version:           0.9.8
-Release:           2%{?dist}
+Release:           3%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -217,6 +217,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Wed Jul 01 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-3
+- Fixed the wrong logrotate configuration to not use a wildcard
+
 * Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.8-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
