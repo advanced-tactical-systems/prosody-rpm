@@ -7,17 +7,17 @@ Prosody upstream tries to determine them by the LuaSec version - risky, because 
 shipping LuaSec 0.4.1 since ever, but still had no support for the "no_ticket" option.
 
 --- prosody-0.9.8/core/certmanager.lua			2015-03-24 20:18:04.000000000 +0100
-+++ prosody-0.9.8/core/certmanager.lua.rhel5		2015-05-05 00:47:21.000000000 +0200
-@@ -33,7 +33,7 @@
- local default_ssl_config = configmanager.get("*", "ssl");
- local default_capath = "/etc/ssl/certs";
++++ prosody-0.9.8/core/certmanager.lua.rhel5		2015-07-13 20:35:33.000000000 +0200
+@@ -34,7 +34,7 @@
+ local default_capath = "/etc/pki/tls/certs";
+ local default_cafile = "/etc/pki/tls/certs/ca-bundle.crt";
  local default_verify = (ssl and ssl.x509 and { "peer", "client_once", }) or "none";
 -local default_options = { "no_sslv2", "no_sslv3", "cipher_server_preference", luasec_has_noticket and "no_ticket" or nil };
 +local default_options = { "no_sslv2", "no_sslv3", "cipher_server_preference" };
  local default_verifyext = { "lsec_continue", "lsec_ignore_purpose" };
  
  if ssl and not luasec_has_verifyext and ssl.x509 then
-@@ -56,6 +56,7 @@
+@@ -57,6 +57,7 @@
  
  	if not ssl then return nil, "LuaSec (required for encryption) was not found"; end
  	if not user_ssl_config then return nil, "No SSL/TLS configuration present for "..host; end
@@ -25,7 +25,7 @@ shipping LuaSec 0.4.1 since ever, but still had no support for the "no_ticket" o
  	
  	local ssl_config = {
  		mode = mode;
-@@ -69,7 +70,6 @@
+@@ -70,7 +71,6 @@
  		verifyext = user_ssl_config.verifyext or default_verifyext;
  		options = user_ssl_config.options or default_options;
  		depth = user_ssl_config.depth;

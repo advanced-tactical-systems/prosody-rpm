@@ -5,7 +5,7 @@
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
 Version:           0.9.8
-Release:           3%{?dist}
+Release:           4%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -60,6 +60,7 @@ added functionality, or prototype new protocols.
 %if 0%{?rhel} == 5
 %patch1 -p1
 %endif
+rm -f core/certmanager.lua.config
 
 %build
 # CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
@@ -217,6 +218,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Wed Jul 15 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-4
+- Change default CA paths to /etc/pki/tls/certs(/ca-bundle.crt)
+
 * Wed Jul 01 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-3
 - Fixed the wrong logrotate configuration to not use a wildcard
 
