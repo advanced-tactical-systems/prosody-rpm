@@ -5,7 +5,7 @@
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
 Version:           0.9.8
-Release:           4%{?dist}
+Release:           5%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -218,6 +218,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Sun Jul 23 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-5
+- Start after network-online.target not network.target (#1256062)
+
 * Wed Jul 15 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-4
 - Change default CA paths to /etc/pki/tls/certs(/ca-bundle.crt)
 
