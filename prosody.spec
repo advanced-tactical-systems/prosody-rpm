@@ -4,8 +4,8 @@
 
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
-Version:           0.9.8
-Release:           6%{?dist}
+Version:           0.9.9
+Release:           1%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -19,7 +19,6 @@ Source6:           prosody-localhost.cfg.lua
 Source7:           prosody-example.com.cfg.lua
 Patch0:            prosody-0.9.8-config.patch
 Patch1:            prosody-0.9.8-rhel5.patch
-Patch2:            prosody-0.9.8-dns-ipv6.patch
 BuildRequires:     libidn-devel, openssl-devel
 Requires(pre):     shadow-utils
 %if 0%{?rhel} > 6 || 0%{?fedora} > 17
@@ -61,8 +60,6 @@ added functionality, or prototype new protocols.
 %if 0%{?rhel} == 5
 %patch1 -p1
 %endif
-%patch2 -p1
-rm -f core/certmanager.lua.config
 
 %build
 # CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
@@ -223,6 +220,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Fri Jan 08 2016 Robert Scheck <robert@fedoraproject.org> 0.9.9-1
+- Upgrade to 0.9.9 (#1296983, #1296984)
+
 * Sun Sep 27 2015 Robert Scheck <robert@fedoraproject.org> 0.9.8-6
 - Fixed shebang for ejabberd2prosody
 - Backported support for IPv6 DNS servers (#1256677)
