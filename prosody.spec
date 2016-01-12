@@ -5,7 +5,7 @@
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
 Version:           0.9.9
-Release:           1%{?dist}
+Release:           2%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -19,6 +19,7 @@ Source6:           prosody-localhost.cfg.lua
 Source7:           prosody-example.com.cfg.lua
 Patch0:            prosody-0.9.8-config.patch
 Patch1:            prosody-0.9.8-rhel5.patch
+Patch2:            prosody-0.9.9-urandom.patch
 BuildRequires:     libidn-devel, openssl-devel
 Requires(pre):     shadow-utils
 %if 0%{?rhel} > 6 || 0%{?fedora} > 17
@@ -58,8 +59,9 @@ added functionality, or prototype new protocols.
 %setup -q
 %patch0 -p1 -b .config
 %if 0%{?rhel} == 5
-%patch1 -p1
+%patch1 -p1 -b .rhel5
 %endif
+%patch2 -p1 -b .urandom
 
 %build
 # CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
@@ -220,6 +222,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Tue Jan 12 2016 Robert Scheck <robert@fedoraproject.org> 0.9.9-2
+- Added upstream patch to open /dev/urandom read-only
+
 * Fri Jan 08 2016 Robert Scheck <robert@fedoraproject.org> 0.9.9-1
 - Upgrade to 0.9.9 (#1296983, #1296984)
 
