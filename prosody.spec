@@ -5,7 +5,7 @@
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
 Version:           0.9.10
-Release:           1%{?dist}
+Release:           2%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
@@ -220,6 +220,9 @@ fi
 %{_mandir}/man1/%{name}*.1*
 
 %changelog
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.9.10-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
 * Wed Jan 27 2016 Robert Scheck <robert@fedoraproject.org> 0.9.10-1
 - Upgrade to 0.9.10 (#1302463)
 
