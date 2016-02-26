@@ -4,12 +4,12 @@
 
 Summary:           Flexible communications server for Jabber/XMPP
 Name:              prosody
-Version:           0.9.10
-Release:           2%{?dist}
+Version:           0.10.0
+Release:           1%{?dist}
 License:           MIT
 Group:             System Environment/Daemons
 URL:               https://prosody.im/
-Source0:           https://prosody.im/downloads/source/%{name}-%{version}.tar.gz
+Source0:           https://github.com/advanced-tactical-systems/prosody/releases/download/untagged-2d64496fbe33a0c98d7d/%{name}-%{version}-beta1.tar.gz
 Source1:           prosody.init
 Source2:           prosody.logrotate-init
 Source3:           prosody.service
@@ -17,8 +17,8 @@ Source4:           prosody.logrotate-service
 Source5:           prosody.tmpfilesd
 Source6:           prosody-localhost.cfg.lua
 Source7:           prosody-example.com.cfg.lua
-Patch0:            prosody-0.9.8-config.patch
-Patch1:            prosody-0.9.8-rhel5.patch
+#Patch0:            prosody-0.9.8-config.patch
+#Patch1:            prosody-0.9.8-rhel5.patch
 BuildRequires:     libidn-devel, openssl-devel
 Requires(pre):     shadow-utils
 %if 0%{?rhel} > 6 || 0%{?fedora} > 17
@@ -56,10 +56,10 @@ added functionality, or prototype new protocols.
 
 %prep
 %setup -q
-%patch0 -p1 -b .config
-%if 0%{?rhel} == 5
-%patch1 -p1 -b .rhel5
-%endif
+#%patch0 -p1 -b .config
+#%if 0%{?rhel} == 5
+#%patch1 -p1 -b .rhel5
+#%endif
 
 %build
 # CFLAG -D_GNU_SOURCE requires fallocate() which requires GLIBC >= 2.10
@@ -118,7 +118,7 @@ sed -e 's@/run@%{_localstatedir}/run@' -i $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/
 %endif
 
 # Keep configuration file timestamp
-touch -c -r prosody.cfg.lua.dist.config $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/prosody.cfg.lua
+#touch -c -r prosody.cfg.lua.dist.config $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/prosody.cfg.lua
 
 # Install virtual host configuration
 install -D -p -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/conf.d/localhost.cfg.lua

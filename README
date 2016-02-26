@@ -1,0 +1,17 @@
+Package a prosody 0.10.0 RPM for use on CentOS 7
+0- vagrant up
+
+0. Install dependencies
+sudo yum install rpmdevtools
+sudo yum install lua-devel openssl-devel libidn-devel
+sudo yum install gcc
+
+0.b. rpmdev-setuptree
+
+
+1. Download prosody-0.10.0.tar.gz
+2. Move sources to ~/rpmbuild/SOURCES
+3. Build RPM:
+	rpmbuild -bb prosody.spec 
+
+! Build an RPM - Yeah.
